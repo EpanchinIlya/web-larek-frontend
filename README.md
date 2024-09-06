@@ -240,15 +240,15 @@ class CardView extends Component<ICard>{
 
     // защищенные поля для хранения ссылок на элементы разметки
 
-    protected titleElement: HTMLElement;
-    protected priceElement: HTMLElement;
-    protected buttonElement: HTMLButtonElement;
-    protected descriptionElement: HTMLElement;
-    protected imageElement: HTMLImageElement;
-    protected categoryElement: HTMLElement;
+    protected _titleElement: HTMLElement;
+    protected _priceElement: HTMLElement;
+    protected _buttonElement: HTMLButtonElement;
+    protected _descriptionElement: HTMLElement;
+    protected _imageElement: HTMLImageElement;
+    protected _categoryElement: HTMLElement;
 
-    // конструктор принимает контейнер разметки для заполнения
-    constructor(container: HTMLElement) 
+    // конструктор принимает: общую часть css классов,  контейнер разметки для заполнения, обработчик нажатия кнопки
+    constructor(protected blockName: string, container: HTMLElement,   action?: ICardActions ) 
    
     // геттеры и сеттеры  для данных( в том числе  для работы render родителя)
     set id(value: string) 
@@ -272,8 +272,8 @@ class CardView extends Component<ICard>{
 // переменная для сохранения статуса: в корзине / не в корзине
 	private _isAddedToBasket: boolean;
 
-// конструктор принимает контейнер для отображения
-    constructor( container: HTMLElement) 
+// конструктор принимает: общую часть css классов,  контейнер разметки для заполнения, обработчик нажатия кнопки
+    constructor(blockName: string, container: HTMLElement, action?: ICardActions) 
 
 // метод для замены надписи на кнопке: "Добавить в корзину"
     toggleButtonBusket(status: boolean): void
@@ -441,7 +441,7 @@ class PageView extends Component<IPage> {
 
 
 События генерируемые моделью
-12. Событие изменения списка карточек                                   cardList:update
+12. Событие изменения списка карточек                                   cardList:updated
 13. Событие изменения состава корзины                                   basket:changed    
 14. Событие генерируемое моделью после валидации формы delivery         formErrors:change:delivery
 15. Событие генерируемое моделью после валидации формы contact          formErrors:change:contacts 

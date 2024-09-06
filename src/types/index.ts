@@ -19,7 +19,7 @@ export interface ICardList{
 
  bigCard:ICard;   
  cardList:ICard[];
- initList():void; 
+ initList(list:ICard[]):void; 
  addBigCard(card:ICard):void;
  removeBigCard(card:ICard):void;
 
@@ -30,11 +30,17 @@ export interface IBasket
 {
     cardListBasket:ICard[];
     remove(id:string):void;  
-    add(id:string):void;
+    add(card:ICard):void;
     clear():void; 
     getCardListBasket():ICard[]
     getTotalPrise():number; 
 
+}
+
+
+export interface IDelivery {
+	address: string;
+	payment: Method;
 }
 
 
@@ -43,10 +49,6 @@ export interface IContact {
 	email: string;
 }
 
-export interface IDelivery {
-	address: string;
-	payment: Method ;
-}
 
 export type IOrderAllData = Partial<IContact> & Partial<IDelivery>;
 
