@@ -43,7 +43,7 @@ const successed = new SuccessView(cloneTemplate(successedTemplate), {
 
 const order = new Order(eventEmmiter);
 
-//page.basketCounter = 3;
+
 
 // получили данные с сервера
 api

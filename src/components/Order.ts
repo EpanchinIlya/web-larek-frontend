@@ -82,12 +82,7 @@ export class OrderDeliveryView extends Component<
 		this.setText(this._errors, value);
 	}
 
-	// render(state: Partial<T> & IFormState) {
-	// 	const { valid, errors, ...inputs } = state;
-	// 	super.render({ valid, errors });
-	// 	Object.assign(this, inputs);
-	// 	return this.container;
-	// }
+
 }
 
 export class OrderContactView extends Component<
