@@ -61,8 +61,8 @@ export interface IOrder extends IOrderAllData  {
 
 
 export interface IOrderResult {
-	
-	total: number;
+		id:string;
+        total: number;
 }
 
 

@@ -10,34 +10,11 @@ import { Category, ICard } from "../types";
 import { ensureElement } from "../utils/utils";
 import { Component } from "./base/Component";
 
-//     // защищенные поля для хранения ссылок на элементы разметки
 
-//     protected titleElement: HTMLElement;
-//     protected priceElement: HTMLElement;
-//     protected buttonElement: HTMLButtonElement;
-//     protected descriptionElement: HTMLElement;
-//     protected imageElement: HTMLImageElement;
-//     protected categoryElement: HTMLElement;
-
-//     // конструктор принимает контейнер разметки для заполнения
-//     constructor(container: HTMLElement) 
-   
-//     // геттеры и сеттеры  для данных( в том числе  для работы render родителя)
-//     set id(value: string) 
-//     get id(): string       
-//     set title(value: string) 
-// 	get title(): string 
-//     set description(value: string)
-//     set image(src: string) 
-//     set category(category: Category) 
-// 	set price(value: number) 
-// }
 
 interface ICardActions {
-    onClick: (event: MouseEvent) => void;
+    onClick: () => void;
 }
-
-
 
 export class CardView extends Component<ICard>{
 
@@ -72,16 +49,6 @@ export class CardView extends Component<ICard>{
                  }
            }
 
-
-
-        // set id(value: string) {
-        //     this.container.dataset.id = value;
-        // }
-        // get id(): string {
-        //     return this.container.dataset.id || '';
-        // }
-    
-    
        
          set title(value: string) {
              this.setText(this._titleElement, value);
@@ -92,7 +59,7 @@ export class CardView extends Component<ICard>{
          }
 
          set price(value: number) {
-             if (value) {
+             if (value>0) {
                  this.setText(this._priceElement, `${value} синапсов`);
              } else {
                  this.setText(this._priceElement, 'Бесценно');
@@ -164,31 +131,10 @@ export class CardModalView extends CardView {
 		this._isAddedToBasket = value;
 	}
 
-    // render(data: IProduct): HTMLElement {
-	// 	super.render(data);
-	// 	return this.container;
-	// }
+    
 }
 
-// Класс отображения карточки  в модальном окне наследует класс CardView
 
-//  class CardModalView extends CardView {
-
-// // переменная для сохранения статуса: в корзине / не в корзине
-// 	private _isAddedToBasket: boolean;
-
-// // конструктор принимает контейнер для отображения
-//     constructor( container: HTMLElement) 
-
-// // метод для замены надписи на кнопке: "Добавить в корзину"
-//     toggleButtonBusket(status: boolean): void
-	
-// // Геттер и сеттер для свойства  _isAddedToBasket
-//     get isAddedToBasket(): boolean 
-// 	set isAddedToBasket(value: boolean) 
-
-   
-// }
 
 
 

@@ -1,6 +1,6 @@
 
 
-import { IBasket, ICard, ICardList } from "../types";
+import { IBasket, ICard, ICardList, IDelivery, IOrder, IOrderAllData, Method } from "../types";
 import { EventEmitter, IEvents } from "./base/events";
 
 
@@ -80,11 +80,88 @@ export class Basket implements IBasket {
              		}, 0);
 
     }
+
+    getItems(){
+    return  this.cardListBasket.map((item)=>item.id);
+
+    }
     
 }
 
 
 
 
+export class Order implements IOrder {
+    total: number;
+    items: string[];
+    phone?: string;
+    email?: string;
+    address?: string;
+    payment?: Method;
+    formErrors:string[] =[];
+
+    constructor(events: IEvents) {;}	
+
+        
+
+    setValidateField(
+		field: keyof IOrderAllData,
+		value: IOrderAllData[keyof IOrderAllData]
+	    ) 
+    {
+
+        if(field ==='payment')  this.payment = value as Method; 
+        if(field ==='address')  this.address = value; 
+        if(field ==='email')  this.email = value; 
+        if(field ==='phone')  this.phone = value; 
+    }
+
+
+    validateDelivery():boolean{
+
+        this.formErrors = [];
+       if(!this.payment){
+        this.formErrors.push("Необходимо выбрать способ доставки.")
+       }
+       
+   
+       if((this.address === undefined)||(this.address.length === 0)){
+            this.formErrors.push("Необходимо указать адрес доставки.")
+       }
+
+       if(this.formErrors.length>0) { return false;}
+       else {  return true;}
+   
+    }
+
+
+
+    validateContact():boolean{
+
+        this.formErrors = [];
+       if(!this.email){
+        this.formErrors.push("Необходимо указать адрес электронной почты.")
+       }
+       
+
+       if(!this.phone){
+        this.formErrors.push("Необходимо указать номер телефона.")
+       }
+
+       if(this.formErrors.length>0) return false;
+       else return true;
+   
+    }
+
+
+
+
+
+
+
+
+    
+
+}
 
 

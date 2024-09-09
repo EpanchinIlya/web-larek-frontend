@@ -1,4 +1,4 @@
-import { IDelivery, Method } from "../types";
+import { IContact, IDelivery, Method } from "../types";
 import { ensureAllElements, ensureElement } from "../utils/utils";
 import { Component } from "./base/Component";
 import { EventEmitter } from "./base/events";
@@ -40,8 +40,7 @@ export class OrderDeliveryView extends Component<Partial<IForm> & Partial<IDeliv
 				this.resetButtonStatus();
                	this.toggleClass(button, 'button_alt-active', true);;
 				const paymentMethod = (event.target as HTMLButtonElement).name;
-				
-                //this.paymentSelection(paymentMethod as Method);
+				              
                 this.events.emit('order.delivery:change', {
                     field: 'payment',
                     value:  paymentMethod
@@ -54,16 +53,12 @@ export class OrderDeliveryView extends Component<Partial<IForm> & Partial<IDeliv
 			const target = e.target as HTMLInputElement;
 			const field = target.name;
 			const value = target.value;
-			this.events.emit('adress:change', {
+			this.events.emit('order.delivery:change', {
                 field,
                 value,
             });
 		});
 	}
-
-   
-	
-
 
     resetButtonStatus() {
         if (this._paymentButtons) {
@@ -73,18 +68,9 @@ export class OrderDeliveryView extends Component<Partial<IForm> & Partial<IDeliv
         }
     }
 
-    // paymentSelection(method: Method) {
-    //     this.events.emit('order.delivery:change', {
-    //         field: 'payment',
-    //         value: method,
-    //     });
   
-
-
-
-
     set address(value: string) {
-        this.setText(this._input, value);
+		this._input.value = value;
 	}
 
 	set formValid(value: boolean) {
@@ -101,6 +87,75 @@ export class OrderDeliveryView extends Component<Partial<IForm> & Partial<IDeliv
 	// 	Object.assign(this, inputs);
 	// 	return this.container;
 	// }
+}
+
+
+
+
+export class OrderContactView extends Component<Partial<IForm> & Partial<IContact>> {
+    protected _submitButton: HTMLButtonElement;
+	protected _errors: HTMLElement;
+    protected _phoneInput: HTMLInputElement;
+    protected _emailInput: HTMLInputElement;
+
+
+
+	constructor(protected container: HTMLFormElement, protected events: EventEmitter) {
+		super(container);
+
+		this._submitButton = ensureElement<HTMLButtonElement>('button[type=submit]',this.container);
+		this._errors = ensureElement<HTMLElement>('.form__errors', this.container);
+		this._emailInput =  container.elements.namedItem('email') as HTMLInputElement; 
+        this._phoneInput = container.elements.namedItem('phone') as HTMLInputElement; 
+      
+
+
+
+		this.container.addEventListener('submit', (e: Event) => {
+			e.preventDefault();
+			this.events.emit('order.contact:next');
+		});
+
+
+		this._emailInput.addEventListener('input', (e: Event) => {
+			this.inputEvent(e);
+		});
+
+
+		this._phoneInput.addEventListener('input', (e: Event) => {
+			this.inputEvent(e);
+		});
+	}
+
+
+	inputEvent(e:Event){
+		const target = e.target as HTMLInputElement;
+			const field = target.name;
+			const value = target.value;
+			this.events.emit('order.contact:change', {
+                field,
+                value,
+            });	
+	}
+
+    set email(value: string) {
+		this._emailInput.value = value;
+	}
+
+
+	set phone(value: string) {
+		this._phoneInput.value = value;
+	}
+
+	set formValid(value: boolean) {
+		this.setDisabled(this._submitButton, !value);
+	}
+
+	set formErrors(value: string) {
+		this.setText(this._errors, value);
+	}
+
+	
 }
 
 
