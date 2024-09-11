@@ -2,17 +2,14 @@ import { IContact, IDelivery, Method } from '../types';
 import { ensureAllElements, ensureElement } from '../utils/utils';
 import { Component } from './base/Component';
 import { EventEmitter } from './base/events';
+import { Form } from './Form';
 
 interface IForm {
 	formValid: boolean;
 	formErrors: string[];
 }
 
-export class OrderDeliveryView extends Component<
-	Partial<IForm> & Partial<IDelivery>
-> {
-	protected _submitButton: HTMLButtonElement;
-	protected _errors: HTMLElement;
+export class OrderDeliveryView extends Form<IDelivery> {
 	protected _paymentButtons: HTMLButtonElement[];
 	protected _input: HTMLInputElement;
 
@@ -20,13 +17,8 @@ export class OrderDeliveryView extends Component<
 		protected container: HTMLFormElement,
 		protected events: EventEmitter
 	) {
-		super(container);
+		super(container, events);
 
-		this._submitButton = ensureElement<HTMLButtonElement>(
-			'button[type=submit]',
-			this.container
-		);
-		this._errors = ensureElement<HTMLElement>('.form__errors', this.container);
 		this._paymentButtons = ensureAllElements(
 			'.order__buttons button',
 			container
@@ -40,10 +32,7 @@ export class OrderDeliveryView extends Component<
 
 		this._paymentButtons.forEach((button) => {
 			button.addEventListener('click', (event) => {
-				this.resetButtonStatus();
-				this.toggleClass(button, 'button_alt-active', true);
 				const paymentMethod = (event.target as HTMLButtonElement).name;
-
 				this.events.emit('order.delivery:change', {
 					field: 'payment',
 					value: paymentMethod,
@@ -70,26 +59,24 @@ export class OrderDeliveryView extends Component<
 		}
 	}
 
+	setPayment(method: Method) {
+		this.resetButtonStatus();
+		if (method === 'online')
+			this.toggleClass(this._paymentButtons[0], 'button_alt-active', true);
+		if (method === 'uponReceipt')
+			this.toggleClass(this._paymentButtons[1], 'button_alt-active', true);
+	}
+
+	set payment(method: Method) {
+		this.setPayment(method);
+	}
+
 	set address(value: string) {
 		this._input.value = value;
 	}
-
-	set formValid(value: boolean) {
-		this.setDisabled(this._submitButton, !value);
-	}
-
-	set formErrors(value: string) {
-		this.setText(this._errors, value);
-	}
-
-
 }
 
-export class OrderContactView extends Component<
-	Partial<IForm> & Partial<IContact>
-> {
-	protected _submitButton: HTMLButtonElement;
-	protected _errors: HTMLElement;
+export class OrderContactView extends Form<IContact> {
 	protected _phoneInput: HTMLInputElement;
 	protected _emailInput: HTMLInputElement;
 
@@ -97,13 +84,8 @@ export class OrderContactView extends Component<
 		protected container: HTMLFormElement,
 		protected events: EventEmitter
 	) {
-		super(container);
+		super(container, events);
 
-		this._submitButton = ensureElement<HTMLButtonElement>(
-			'button[type=submit]',
-			this.container
-		);
-		this._errors = ensureElement<HTMLElement>('.form__errors', this.container);
 		this._emailInput = container.elements.namedItem(
 			'email'
 		) as HTMLInputElement;
@@ -141,13 +123,5 @@ export class OrderContactView extends Component<
 
 	set phone(value: string) {
 		this._phoneInput.value = value;
-	}
-
-	set formValid(value: boolean) {
-		this.setDisabled(this._submitButton, !value);
-	}
-
-	set formErrors(value: string) {
-		this.setText(this._errors, value);
 	}
 }

@@ -104,10 +104,11 @@ post(uri: string, data: object, method: ApiPostMethods = 'POST') - метод, �
 
 CardList{
 
- constructor(protected events: IEvents )  - принимает экземляр брокера событий для генерации событий изменения данных
- 
  protected cardList:ICard[];// массив карточек
- protected bigCard:ICard;   // будет хранить карточку, которую кликнул пользователь   
+ protected bigCard:ICard;   // будет хранить карточку, которую кликнул пользователь 
+
+ constructor(protected events: IEvents )  - принимает экземляр брокера событий для генерации событий изменения данных
+
  initList():void;           // метод заполняющий массив карточек. Метод получает данные с сервера, заполняет ими массив и передает
                             // экземпляру брокера событий events событие "cardList:updated"   
  addBigCard(card)           // метод для добавления каточки в качестве bigCard 
@@ -120,25 +121,24 @@ CardList{
  Корзина: хранит данные о товарах. 
 
  Basket{
-
-    constructor(protected events: IEvents )  - принимает экземляр брокера событий для генерации событий изменения данных
     protected cardListBasket:ICard[]; // массив карточек, добавленных в корзину
+    constructor(protected events: IEvents )  - принимает экземляр брокера событий для генерации событий изменения данных
    
     remove(id:string):void; // метод удаляющий товар из корзины.
     add(id:string):void; // метод добавляющий товар в корзину.
     clear():void; // метод очищает корзину.
     getCardListBasket():ICard[] - возвращает cardListBasket 
     getCardListBasketId():string[] - возвращает массив id товаров в корзине
-
     getTotalPrise() - возвращает общую сумму покупок
-
+    isAddedToBasket(id: string): boolean - проверяет наличие карточки в корзине по id
+    getItemsId(): string[] - возвращает массив id карточек в массиве 
     Методы add, remove, clear передают в брокер событий событие "basket::changed"  
     
 } 
 
 ----------------------------------------------------------------------------
 
-Классы для хранения данных покупателя и валидации данных в формах. Реализует интерфейс IOrder
+Классы для хранения данных покупателя и валидации данных в формах. Реализует интерфейс IOrderAllData
 
  type Method =  'online' | 'uponReceipt' |"";
 
@@ -167,16 +167,21 @@ interface IOrder extends IOrderAllData  {
     deliveryAddress:string; // содержит адрес доставки
     email:string; // содержит e-mail    
     phone:string;  // содержит телефон
+    formErrors: string[] = []; // массив ошибок форм
 
    
     //  метод внесения данных адреса доставки с последующей валидацией
     setDeliveryField(fieldName: keyof IOrderAllData, value: IOrderAllData[keyof IOrderAllData]):void;
     // метод внесения контактов с последующей валидацией
     setContactsField(fieldName: keyof IOrderAllData, value: IOrderAllData[keyof IOrderAllData]):void; 
+
+    // Функции валидации полей форм
 	validateDelivery():void 
-    validateContacts():void; 
+    validateContacts():void 
 		
 	
+    clearOrder() - очистка переменных модели
+
 }
 
    
@@ -193,7 +198,8 @@ interface IModalContent {
   class  Modal extends Component<IModalData> { 
         protected _closeButton: HTMLButtonElement;  //переменная для хранения элемента кнопки закрытия модального окна
         protected _content: HTMLElement;        // переменная куда будет помещено внутренее содержимое модального окна
-        constructor(container)  // получает элемент модального окна на странице, чтобы туда поместить содержимое
+        constructor(container: HTMLElement, events: EventEmitter)  // получает элемент модального окна на странице, чтобы туда поместить содержимое
+        Получает экземпляр брокера событий
 
         set content(value: HTMLElement)  - сеттер для установки внутреннего содержиого _content
 		        
@@ -250,16 +256,16 @@ class CardView extends Component<ICard>{
     // конструктор принимает: общую часть css классов,  контейнер разметки для заполнения, обработчик нажатия кнопки
     constructor(protected blockName: string, container: HTMLElement,   action?: ICardActions ) 
    
-    // геттеры и сеттеры  для данных( в том числе  для работы render родителя)
-    set id(value: string) 
-    get id(): string       
+    // сеттеры  для данных( в том числе  для работы render родителя)
+    set id(value: string)  
     set title(value: string) 
-	get title(): string 
-    set description(value: string)
+	set description(value: string)
     set image(src: string) 
     set category(category: Category) 
 	set price(value: number) 
 	
+    convertCategoryToColor(category: Category) - преобразует название категории товара
+    в соответствующий css класс
 	
 }
 
@@ -269,8 +275,7 @@ class CardView extends Component<ICard>{
 
  class CardModalView extends CardView {
 
-// переменная для сохранения статуса: в корзине / не в корзине
-	private _isAddedToBasket: boolean;
+
 
 // конструктор принимает: общую часть css классов,  контейнер разметки для заполнения, обработчик нажатия кнопки
     constructor(blockName: string, container: HTMLElement, action?: ICardActions) 
@@ -278,29 +283,28 @@ class CardView extends Component<ICard>{
 // метод для замены надписи на кнопке: "Добавить в корзину"
     toggleButtonBusket(status: boolean): void
 	
-// Геттер и сеттер для свойства  _isAddedToBasket
-    get isAddedToBasket(): boolean 
-	set isAddedToBasket(value: boolean) 
+// сеттер для переключения состояния кнопки через рендер родителя
+   	set isAddedToBasket(value: boolean) 
 
    
 }
 
 ---------------------------------------------------
 
-Класс для отображения корзины в модальном окне, наследует класс Component, параметризированный интерфейсом IBasketComponents
+Класс для отображения корзины в модальном окне, наследует класс Component, параметризированный интерфейсом IBasketView
 
-interface IBasketComponents{
+interface IBasketView{
   cards: HTMLElement[];
   totalAmount: number;
 }
 
- class BasketView extends Component<IBasketComponents> {
+ class BasketView extends Component<IBasketView> {
 
     // поля для хранения элементов разметки
 
-	protected listElement: HTMLElement;
-	protected totalAmountElement: HTMLElement;
-	protected buttonElement: HTMLButtonElement;
+	protected _listElement: HTMLElement;
+	protected _totalAmountElement: HTMLElement;
+	protected _buttonElement: HTMLButtonElement;
 
 
     // конструктор принимает контейнер и экземпляр EventEmitter
@@ -317,9 +321,6 @@ interface IBasketComponents{
 Класс для отображения формы "способ оплаты"
 // интерфейсы для парамитризации  родителей форм
 
-
-
-
 interface IContact {
 
 	phone: string;
@@ -332,14 +333,25 @@ interface IDelivery {
 	payment: Method;
 }
 
-
-
 class OrderDeliveryView extends Form<IDelivery> {
-    // массив с кнопками выбора оплаты на форме
+    // массив с кнопками выбора оплаты на форме,
+    // переменная для хранения dom элемента для ввода адреса доставки
+
 	paymentButtons: HTMLButtonElement[];
+    protected _input: HTMLInputElement;
 
     // конструктор принимает контейнер и экземляр  EventEmitter
 	constructor(container: HTMLFormElement, events: IEvents) 
+
+    // сброс кнопок выбора способа оплаты в неактивное состояние
+    resetButtonStatus()
+
+    // выставление активности  кнопки выбора способа оплаты
+    setPayment(method: Method) 
+
+    //сеттер для способа оплаты
+    set payment(method: Method)
+
 
 	// сеттер для адреса
     set address(value: string) 
@@ -353,6 +365,11 @@ class OrderDeliveryView extends Form<IDelivery> {
 
 
  class OrderContactView extends Form<IContact> {
+// поля для хранения dom элементов полей ввода формы
+        _phoneInput: HTMLInputElement;
+	    _emailInput: HTMLInputElement;
+
+
 // конструктор принимает контейнер и  экземпляр EventEmitter
 	constructor(container: HTMLFormElement, events: IEvents) 
 		
@@ -399,9 +416,10 @@ interface IPage{
 class PageView extends Component<IPage> {
 
     //поля для хранения элементов разметки
-	protected basketCounterElement: HTMLElement;  // счетчик на корзине
-	protected basketButtonElement: HTMLButtonElement; // кнопка корзины 
-	protected catalogElement: HTMLElement; // контейнер для каталога 
+	protected _basketCounterElement: HTMLElement;  // счетчик на корзине
+	protected _basketButtonElement: HTMLButtonElement; // кнопка корзины 
+	protected _catalogElement: HTMLElement; // контейнер для каталога 
+    protected _wrapper: HTMLElement; // контейнер всей страницы для блокировки
 	
  // конструктор принимает контейнер и  экземпляр EventEmitter
 	constructor(contaiter: HTMLElement, protected events: IEvents)
@@ -409,8 +427,8 @@ class PageView extends Component<IPage> {
 
     // сеттеры для внесения данных в разметку
 	set catalog(cards: HTMLElement[])
-	set busketNumber(value: number) 
-
+	set basketNumber(value: number) 
+    set locked(value: boolean)  // установка состояния блокировки основного экрана
 	
 }
 
@@ -438,7 +456,6 @@ class PageView extends Component<IPage> {
 9. Событие изменения данных в модальном окне контактов                  order.contact:change
 10: Событие нажатия кнопки оплатить в модальном окне доставки           order.contact:next
 11. Событие нажатия кнопки "за новыми покупками"                        success:close
-
 
 События генерируемые моделью
 12. Событие изменения списка карточек                                   cardList:updated

@@ -1,17 +1,20 @@
 import './scss/styles.scss';
-import { Basket, CardList, Order } from './components/AppData';
+
 import { EventEmitter } from './components/base/events';
 import { CardApi } from './components/CardApi';
 
 import { API_URL, CDN_URL } from './utils/constants';
 import { PageView } from './components/Page';
-import { ICard, IOrderAllData } from './types';
+import { ICard, IOrderAllData, Method } from './types';
 import { CardModalView, CardView } from './components/Card';
 import { cloneTemplate, ensureElement } from './utils/utils';
 import { Modal } from './components/Modal';
 import { BasketView } from './components/Basket';
 import { OrderContactView, OrderDeliveryView } from './components/Order';
 import { SuccessView } from './components/Successed';
+import { CardList } from './components/CardModel';
+import { Basket } from './components/BasketModel';
+import { Order } from './components/OrderModel';
 
 const cardListTemplate = ensureElement<HTMLTemplateElement>('#card-catalog');
 const cardBigViewTemplate = ensureElement<HTMLTemplateElement>('#card-preview');
@@ -46,7 +49,10 @@ const order = new Order(eventEmmiter);
 
 
 // получили данные с сервера
-api
+
+const getItemFromApi = () => {
+
+	api
 	.getCardList()
 	.then((data) => {
 		cardList.initList(data);
@@ -55,6 +61,11 @@ api
 	.catch((error) => {
 		console.log(error);
 	});
+}
+
+
+
+getItemFromApi();
 
 // Обновили список карточек
 eventEmmiter.on('cardList:updated', (data: ICard[]) => {
@@ -82,11 +93,15 @@ eventEmmiter.on('cardList:addBigCard', (card: ICard) => {
 	const cardBigView = new CardModalView(
 		'card',
 		cloneTemplate(cardBigViewTemplate),
+		
 		{
 			onClick: () => {
-				card.isAddedToBasket = !card.isAddedToBasket;
-				if (card.isAddedToBasket) eventEmmiter.emit('card:add', card);
-				else eventEmmiter.emit('card:remove', card);
+				
+				if(!basket.isAddedToBasket(card.id)) eventEmmiter.emit('card:add', card);
+				else 								 eventEmmiter.emit('card:remove', card);
+				// card.isAddedToBasket = !card.isAddedToBasket;
+				// if (card.isAddedToBasket) eventEmmiter.emit('card:add', card);
+				// else eventEmmiter.emit('card:remove', card);
 			},
 		}
 	);
@@ -99,7 +114,7 @@ eventEmmiter.on('cardList:addBigCard', (card: ICard) => {
 			image: card.image,
 			description: card.description,
 			category: card.category,
-			isAddedToBasket: card.isAddedToBasket,
+			isAddedToBasket: basket.isAddedToBasket(card.id),
 		}),
 	};
 	modal.render(cardRender);
@@ -125,7 +140,7 @@ eventEmmiter.on('basket:open', () => {
 	const cardListBasketView = basket.cardListBasket.map((card) => {
 		const cardBasket = new CardView('card', cloneTemplate(cardBasketTemplate), {
 			onClick: () => {
-				card.isAddedToBasket = !card.isAddedToBasket;
+				// card.isAddedToBasket = !card.isAddedToBasket;
 
 				basket.remove(card.id);
 				eventEmmiter.emit('basket:open');
@@ -142,8 +157,8 @@ eventEmmiter.on('basket:open', () => {
 		cards: cardListBasketView,
 		total: basket.getTotalPrise(),
 	});
-	order.total = basket.getTotalPrise();
-	order.items = basket.getItems();
+	// order.total = basket.getTotalPrise();
+	// order.items = basket.getItems();
 	modal.render({ content: basketRender });
 });
 
@@ -152,12 +167,22 @@ eventEmmiter.on('basket:open', () => {
 eventEmmiter.on('order:open', () => {
 	orderDeliveryView.resetButtonStatus();
 	const orderDeliveryRender = orderDeliveryView.render({
-		address: '',
-		formValid: false,
-		formErrors: [],
+		payment:'',
+		address:'',
+		valid: false,
+		errors: [],
 	});
+	
 	modal.render({ content: orderDeliveryRender });
 });
+
+
+
+
+eventEmmiter.on('modal:close', () => {
+	order.clearOrder();
+});
+
 
 // отработка  изменений формы доставки
 
@@ -167,12 +192,20 @@ eventEmmiter.on(
 		field: keyof IOrderAllData;
 		value: IOrderAllData[keyof IOrderAllData];
 	}) => {
+
+
 		order.setValidateField(data.field, data.value);
 
+		if(data.field ==='payment'){
+			orderDeliveryView.payment = data.value as Method;				
+		}
+
+		
+
 		if (order.validateDelivery()) {
-			orderDeliveryView.formValid = true;
+			orderDeliveryView.valid = true;
 		} else {
-			orderDeliveryView.formValid = false;
+			orderDeliveryView.valid = false;
 		}
 
 		eventEmmiter.emit('errors:change:delivery', order.formErrors);
@@ -186,16 +219,15 @@ eventEmmiter.on('errors:change:delivery', (data: string[]) => {
 			str = str + item + '  ';
 		});
 	}
-
-	orderDeliveryView.formErrors = str;
+	orderDeliveryView.errors = str;
 });
 
 eventEmmiter.on('order.delivery:next', () => {
 	const orderContactRender = orderContactView.render({
 		email: '',
 		phone: '',
-		formValid: false,
-		formErrors: [],
+		valid: false,
+		errors: [],
 	});
 	modal.render({ content: orderContactRender });
 });
@@ -211,9 +243,9 @@ eventEmmiter.on(
 		order.setValidateField(data.field, data.value);
 
 		if (order.validateContact()) {
-			orderContactView.formValid = true;
+			orderContactView.valid = true;
 		} else {
-			orderContactView.formValid = false;
+			orderContactView.valid = false;
 		}
 
 		eventEmmiter.emit('errors:change:contact', order.formErrors);
@@ -228,7 +260,7 @@ eventEmmiter.on('errors:change:contact', (data: string[]) => {
 		});
 	}
 
-	orderContactView.formErrors = str;
+	orderContactView.errors = str;
 });
 
 eventEmmiter.on('order.contact:next', () => {
@@ -238,19 +270,22 @@ eventEmmiter.on('order.contact:next', () => {
 			address: order.address,
 			phone: order.phone,
 			email: order.email,
-			total: order.total,
-			items: order.items,
+			total: basket.getTotalPrise(),
+			items: basket.getItemsId(),
 		})
 		.then((data) => {
 			page.basketCounter = 0;
 			basket.clear();
+			getItemFromApi();
 			modal.render({ content: successed.render({ total: data.total }) });
 		})
 		.catch((error) => {
 			console.log(error);
 		});
 
-	modal.render({
-		content: successed.render({ total: basket.getTotalPrise() }),
-	});
 });
+
+
+
+eventEmmiter.on('modal:open', () => {page.locked = true;});
+eventEmmiter.on('modal:close', () => {page.locked = false;});

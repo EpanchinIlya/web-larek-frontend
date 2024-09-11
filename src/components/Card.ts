@@ -1,8 +1,7 @@
-// class CardView extends Component<ICard>{
-
 import { Category, ICard } from '../types';
 import { ensureElement } from '../utils/utils';
 import { Component } from './base/Component';
+import { EventEmitter } from './base/events';
 
 interface ICardActions {
 	onClick: () => void;
@@ -50,10 +49,6 @@ export class CardView extends Component<ICard> {
 		this.setText(this._titleElement, value);
 	}
 
-	get title(): string {
-		return this._titleElement.textContent;
-	}
-
 	set price(value: number) {
 		if (value > 0) {
 			this.setText(this._priceElement, `${value} синапсов`);
@@ -98,20 +93,12 @@ export class CardView extends Component<ICard> {
 }
 
 export class CardModalView extends CardView {
-	private _isAddedToBasket: boolean;
-
 	constructor(
 		blockName: string,
 		container: HTMLElement,
 		action?: ICardActions
 	) {
 		super(blockName, container, action);
-
-		if (this._buttonElement) {
-			this._buttonElement.addEventListener('click', () => {
-				this._isAddedToBasket = !this._isAddedToBasket;
-			});
-		}
 	}
 
 	toggleButtonStatus(status: boolean): void {
@@ -122,12 +109,7 @@ export class CardModalView extends CardView {
 		}
 	}
 
-	get isAddedToBasket(): boolean {
-		return this._isAddedToBasket;
-	}
-
 	set isAddedToBasket(value: boolean) {
 		this.toggleButtonStatus(value);
-		this._isAddedToBasket = value;
 	}
 }

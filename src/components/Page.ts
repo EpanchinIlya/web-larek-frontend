@@ -11,6 +11,7 @@ export class PageView extends Component<IPage> {
 	protected _basketCounterElement: HTMLElement;
 	protected _basketButtonElement: HTMLButtonElement;
 	protected _catalogElement: HTMLElement;
+	protected _wrapper: HTMLElement;
 
 	constructor(contaiter: HTMLElement, protected events: EventEmitter) {
 		super(contaiter);
@@ -26,6 +27,11 @@ export class PageView extends Component<IPage> {
 			'.gallery',
 			this.container
 		);
+		this._wrapper = ensureElement<HTMLElement>(
+			'.page__wrapper',
+			this.container
+		);
+
 		this._basketButtonElement.addEventListener('click', () => {
 			this.events.emit('basket:open');
 		});
@@ -41,7 +47,13 @@ export class PageView extends Component<IPage> {
 		this.setText(this._basketCounterElement, value);
 	}
 
-	get basketCounter() {
-		return parseInt(this._basketCounterElement.textContent);
+	
+
+	set locked(value: boolean) {
+		if (value) {
+			this._wrapper.classList.add('page__wrapper_locked');
+		} else {
+			this._wrapper.classList.remove('page__wrapper_locked');
+		}
 	}
 }
