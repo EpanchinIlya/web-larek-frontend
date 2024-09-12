@@ -41,8 +41,9 @@ export class Basket implements IBasket {
 		const fil = this.cardListBasket.filter((card) => {
 			return card.id === id;
 		});
-		if (fil.length > 0) return true;
-		else return false;
+
+		return (fil.length>0);
+		
 	}
 
 	getItemsId(): string[] {

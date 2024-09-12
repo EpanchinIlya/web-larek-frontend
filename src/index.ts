@@ -4,14 +4,14 @@ import { EventEmitter } from './components/base/events';
 import { CardApi } from './components/CardApi';
 
 import { API_URL, CDN_URL } from './utils/constants';
-import { PageView } from './components/Page';
+import { PageView } from './components/PageView';
 import { ICard, IOrderAllData, Method } from './types';
-import { CardModalView, CardView } from './components/Card';
+import { CardModalView, CardView } from './components/CardView';
 import { cloneTemplate, ensureElement } from './utils/utils';
 import { Modal } from './components/Modal';
 import { BasketView } from './components/Basket';
-import { OrderContactView, OrderDeliveryView } from './components/Order';
-import { SuccessView } from './components/Successed';
+import { OrderContactView, OrderDeliveryView } from './components/OrderView';
+import { SuccessView } from './components/SuccessView';
 import { CardList } from './components/CardModel';
 import { Basket } from './components/BasketModel';
 import { Order } from './components/OrderModel';
@@ -99,9 +99,7 @@ eventEmmiter.on('cardList:addBigCard', (card: ICard) => {
 				
 				if(!basket.isAddedToBasket(card.id)) eventEmmiter.emit('card:add', card);
 				else 								 eventEmmiter.emit('card:remove', card);
-				// card.isAddedToBasket = !card.isAddedToBasket;
-				// if (card.isAddedToBasket) eventEmmiter.emit('card:add', card);
-				// else eventEmmiter.emit('card:remove', card);
+				
 			},
 		}
 	);
@@ -140,9 +138,8 @@ eventEmmiter.on('basket:open', () => {
 	const cardListBasketView = basket.cardListBasket.map((card) => {
 		const cardBasket = new CardView('card', cloneTemplate(cardBasketTemplate), {
 			onClick: () => {
-				// card.isAddedToBasket = !card.isAddedToBasket;
-
 				basket.remove(card.id);
+				modal.close();  // надо закрыть модальное окно? закроем))
 				eventEmmiter.emit('basket:open');
 			},
 		});
@@ -157,8 +154,6 @@ eventEmmiter.on('basket:open', () => {
 		cards: cardListBasketView,
 		total: basket.getTotalPrise(),
 	});
-	// order.total = basket.getTotalPrise();
-	// order.items = basket.getItems();
 	modal.render({ content: basketRender });
 });
 
@@ -222,7 +217,7 @@ eventEmmiter.on('errors:change:delivery', (data: string[]) => {
 	orderDeliveryView.errors = str;
 });
 
-eventEmmiter.on('order.delivery:next', () => {
+eventEmmiter.on('order.delivery:submit', () => {
 	const orderContactRender = orderContactView.render({
 		email: '',
 		phone: '',
@@ -235,7 +230,7 @@ eventEmmiter.on('order.delivery:next', () => {
 // отработка  изменений формы контактов
 
 eventEmmiter.on(
-	'order.contact:change',
+	'order.contacts:change',
 	(data: {
 		field: keyof IOrderAllData;
 		value: IOrderAllData[keyof IOrderAllData];
@@ -263,7 +258,7 @@ eventEmmiter.on('errors:change:contact', (data: string[]) => {
 	orderContactView.errors = str;
 });
 
-eventEmmiter.on('order.contact:next', () => {
+eventEmmiter.on('order.contacts:submit', () => {
 	api
 		.postOrder({
 			payment: order.payment,

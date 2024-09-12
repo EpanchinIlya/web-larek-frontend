@@ -25,10 +25,7 @@ export class OrderDeliveryView extends Form<IDelivery> {
 		);
 		this._input = container.elements.namedItem('address') as HTMLInputElement;
 
-		this.container.addEventListener('submit', (e: Event) => {
-			e.preventDefault();
-			this.events.emit('order.delivery:next');
-		});
+		
 
 		this._paymentButtons.forEach((button) => {
 			button.addEventListener('click', (event) => {
@@ -40,15 +37,6 @@ export class OrderDeliveryView extends Form<IDelivery> {
 			});
 		});
 
-		this._input.addEventListener('input', (e: Event) => {
-			const target = e.target as HTMLInputElement;
-			const field = target.name;
-			const value = target.value;
-			this.events.emit('order.delivery:change', {
-				field,
-				value,
-			});
-		});
 	}
 
 	resetButtonStatus() {
@@ -93,30 +81,11 @@ export class OrderContactView extends Form<IContact> {
 			'phone'
 		) as HTMLInputElement;
 
-		this.container.addEventListener('submit', (e: Event) => {
-			e.preventDefault();
-			this.events.emit('order.contact:next');
-		});
-
-		this._emailInput.addEventListener('input', (e: Event) => {
-			this.inputEvent(e);
-		});
-
-		this._phoneInput.addEventListener('input', (e: Event) => {
-			this.inputEvent(e);
-		});
+	
+	
 	}
 
-	inputEvent(e: Event) {
-		const target = e.target as HTMLInputElement;
-		const field = target.name;
-		const value = target.value;
-		this.events.emit('order.contact:change', {
-			field,
-			value,
-		});
-	}
-
+	
 	set email(value: string) {
 		this._emailInput.value = value;
 	}
